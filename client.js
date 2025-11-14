@@ -1,3 +1,5 @@
+const SERVER_IP = 'pacis-link.onrender.com';
+
 const socket = io(); // connects automatically to the backend server
 
 const roomInput = document.getElementById('room');
