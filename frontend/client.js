@@ -1,7 +1,8 @@
-// Automatically get backend URL
-const SERVER_URL = window.location.origin;
+// Automatically use the backend URL where frontend is hosted
+// If you deploy frontend and backend separately, set the backend URL here
+const BACKEND_URL = 'https://pacis-link.onrender.com'; // <- your Render backend URL
 
-const socket = io(SERVER_URL);
+const socket = io(BACKEND_URL);
 
 const roomInput = document.getElementById('room');
 const joinBtn = document.getElementById('joinBtn');
@@ -22,16 +23,16 @@ joinBtn.onclick = async () => {
   socket.emit('join-room', currentRoom);
 
   // Load previous messages
-  const resText = await fetch(`${SERVER_URL}/api/text/list?room=${currentRoom}`);
+  const resText = await fetch(`${BACKEND_URL}/api/text/list?room=${currentRoom}`);
   const texts = await resText.json();
   messagesDiv.innerHTML = '';
   texts.reverse().forEach(t => addMessage(t.sender, t.content));
 
-  // Load previous files
-  const resFiles = await fetch(`${SERVER_URL}/api/files`);
+  // Load files
+  const resFiles = await fetch(`${BACKEND_URL}/api/files`);
   const files = await resFiles.json();
   fileList.innerHTML = '';
-  files.forEach(f => addFile(f.originalName, `${SERVER_URL}${f.url}`));
+  files.forEach(f => addFile(f.originalName, `${BACKEND_URL}${f.url}`));
 };
 
 // --- Send text
@@ -40,17 +41,15 @@ sendBtn.onclick = async () => {
   const message = messageInput.value.trim();
   if (!message) return;
 
-  // Emit via socket for real-time
   socket.emit('chat-message', { room: currentRoom, sender, message });
+  addMessage('You', message);
+  messageInput.value = '';
 
-  // Save message to backend
-  await fetch(`${SERVER_URL}/api/text/send`, {
+  await fetch(`${BACKEND_URL}/api/text/send`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ sender, content: message, room: currentRoom })
+    body: JSON.stringify({ room: currentRoom, sender, content: message })
   });
-
-  messageInput.value = '';
 };
 
 // --- Receive text
@@ -61,34 +60,31 @@ socket.on('chat-message', (data) => {
 // --- Upload file
 uploadBtn.onclick = async () => {
   if (!fileInput.files.length) return alert('Select a file');
+
   const form = new FormData();
   form.append('file', fileInput.files[0]);
 
-  const res = await fetch(`${SERVER_URL}/api/files/upload`, {
+  const res = await fetch(`${BACKEND_URL}/api/files/upload`, {
     method: 'POST',
     body: form
   });
+
   const fileMeta = await res.json();
-
-  // Emit via socket
   socket.emit('file-shared', { room: currentRoom, ...fileMeta });
-
-  // Add to UI
-  addFile(fileMeta.originalName, `${SERVER_URL}${fileMeta.url}`);
+  addFile(fileMeta.originalName, `${BACKEND_URL}${fileMeta.url}`);
   fileInput.value = '';
 };
 
 // --- Receive file
 socket.on('file-shared', (file) => {
-  addFile(file.originalName, `${SERVER_URL}${file.url}`);
+  addFile(file.originalName, `${BACKEND_URL}${file.url}`);
 });
 
 // --- Helper functions
 function addMessage(sender, message) {
   const div = document.createElement('div');
   div.textContent = `${sender}: ${message}`;
-  messagesDiv.appendChild(div);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight; // auto-scroll
+  messagesDiv.prepend(div);
 }
 
 function addFile(name, url) {
@@ -96,7 +92,7 @@ function addFile(name, url) {
   const a = document.createElement('a');
   a.href = url;
   a.textContent = name;
-  a.download = name;
+  a.download = name; // This lets users download the file
   li.appendChild(a);
   fileList.prepend(li);
 }
