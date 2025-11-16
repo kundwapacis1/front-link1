@@ -1,74 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Local Link - LAN Sharing</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Link</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-    /* --- Reset & font --- */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; color: #333; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #e2e8f0;
+      margin: 0;
+      padding: 0;
+    }
 
-    /* --- Container --- */
-    .container { max-width: 900px; margin: 30px auto; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
 
-    h1, h2 { text-align: center; margin-bottom: 20px; color: #222; }
+    h1 {
+      text-align: center;
+      color: #1e293b;
+      margin-bottom: 20px;
+    }
 
-    /* --- Room selector --- */
-    #roomContainer { display: flex; justify-content: center; margin-bottom: 20px; gap: 10px; }
-    #roomContainer input { padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 150px; }
-    #roomContainer button { padding: 8px 15px; border: none; border-radius: 5px; background: #4CAF50; color: white; cursor: pointer; transition: 0.2s; }
-    #roomContainer button:hover { background: #45a049; }
+    .join-section,
+    .chat-section,
+    .file-section {
+      margin-bottom: 20px;
+    }
 
-    /* --- Chat & messages --- */
-    #chatContainer { margin-bottom: 30px; }
-    #messages { border: 1px solid #ccc; padding: 10px; height: 250px; overflow-y: auto; background: #fafafa; border-radius: 5px; margin-bottom: 10px; }
-    #chatForm { display: flex; gap: 10px; }
-    #chatForm input { flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
-    #chatForm button { padding: 8px 15px; border: none; border-radius: 5px; background: #2196F3; color: white; cursor: pointer; transition: 0.2s; }
-    #chatForm button:hover { background: #1976d2; }
+    input, button {
+      padding: 10px 15px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      font-size: 16px;
+    }
 
-    /* --- File upload --- */
-    #fileContainer { margin-top: 20px; }
-    #fileContainer h3 { margin-bottom: 10px; }
-    #fileContainer input[type="file"] { margin-bottom: 10px; }
-    #fileContainer button { padding: 8px 15px; border: none; border-radius: 5px; background: #FF9800; color: white; cursor: pointer; transition: 0.2s; }
-    #fileContainer button:hover { background: #fb8c00; }
-    #files { list-style: none; padding-left: 0; margin-top: 10px; }
-    #files li { margin-bottom: 8px; }
-    #files a { text-decoration: none; color: #555; background: #e8e8e8; padding: 5px 10px; border-radius: 5px; display: inline-block; transition: 0.2s; }
-    #files a:hover { background: #d4d4d4; }
+    button {
+      background-color: #3b82f6;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    #messages {
+      border: 1px solid #cbd5e1;
+      padding: 10px;
+      height: 350px;
+      overflow-y: auto;
+      background: #f1f5f9;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 15px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+
+    .message.self {
+      background-color: #3b82f6;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .message.other {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      align-self: flex-start;
+    }
+
+    #messages .message-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .file-list a {
+      display: block;
+      margin-bottom: 5px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #1d4ed8;
+      background-color: #e0f2fe;
+      transition: 0.3s;
+    }
+
+    .file-list a:hover {
+      background-color: #bae6fd;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Local Link - LAN Sharing</h1>
+    <h1>Local Link Chat & File Sharing</h1>
 
-    <div id="roomContainer">
-      <input id="room" type="text" placeholder="Room Name" value="lobby" />
-      <button id="joinBtn">Join Room</button>
+    <div class="join-section">
+      <input type="text" id="room" placeholder="Room name" />
+      <input type="text" id="username" placeholder="Your name" />
+      <button id="joinRoomBtn">Join Room</button>
     </div>
 
-    <div id="chatContainer">
-      <div id="messages"></div>
-      <form id="chatForm">
-        <input id="name" type="text" placeholder="Your name" />
-        <input id="message" type="text" placeholder="Type a message..." />
-        <button type="button" id="sendBtn">Send</button>
-      </form>
+    <div class="chat-section">
+      <div id="messages" class="message-container"></div>
+      <input type="text" id="messageInput" placeholder="Type your message..." disabled />
+      <button id="sendBtn" disabled>Send</button>
     </div>
 
-    <div id="fileContainer">
-      <h3>Share a File</h3>
-      <input type="file" id="fileInput" />
-      <button id="uploadBtn">Upload</button>
-      <ul id="files"></ul>
+    <div class="file-section">
+      <input type="file" id="fileInput" disabled />
+      <button id="uploadBtn" disabled>Upload File</button>
+      <h3>Files in Room:</h3>
+      <div id="fileList" class="file-list"></div>
     </div>
   </div>
 
-  <!-- Socket.io -->
-  <script src="https://cdn.socket.io/4.8.0/socket.io.min.js"></script>
-  <!-- Client JS -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="client.js"></script>
 </body>
 </html>
